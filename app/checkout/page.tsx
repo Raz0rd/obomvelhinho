@@ -1,7 +1,7 @@
 'use client';
 
 import { useCart } from '@/contexts/CartContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { CreditCard, Truck, Shield } from 'lucide-react';
@@ -42,8 +42,15 @@ export default function CheckoutPage() {
     metodoPagamento: 'pix',
   });
 
+  // Redirecionar se carrinho estiver vazio (apenas no cliente)
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push('/carrinho');
+    }
+  }, [items.length, router]);
+
+  // Não renderizar nada se carrinho estiver vazio
   if (items.length === 0) {
-    router.push('/carrinho');
     return null;
   }
 
