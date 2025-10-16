@@ -20,21 +20,22 @@ function SucessoContent() {
       return;
     }
 
-    // Google Ads Conversion Tracking - Dispara quando STATUS = PAID
+    // Google Ads Conversion Tracking
+    // IMPORTANTE: Pegue o LABEL de conversão no Google Ads > Conversões > Sua conversão > Tag
+    // Formato: AW-17657798942/SEU_LABEL_AQUI
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      console.log('🎯 Disparando conversão Google Ads (PAID)');
-      console.log('🎯 Send To: AW-17655865530/QnNvCP_jsq4bELrB_OJB');
+      console.log('🎯 Disparando conversão Google Ads');
       console.log('🎯 Transaction ID:', transactionId);
       console.log('🎯 Valor:', valor);
       
       (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-17655865530/QnNvCP_jsq4bELrB_OJB',
-        'value': valor ? parseFloat(valor) : 1.0,
+        'send_to': 'AW-17657798942/8A7OCOmxva4bEJ7C8uNB',
+        'value': valor ? parseFloat(valor) : 0,
         'currency': 'BRL',
         'transaction_id': transactionId
       });
       
-      console.log('✅ Conversão Google Ads disparada com sucesso!');
+      console.log('✅ Conversão Google Ads disparada!');
     }
 
     // Google Analytics 4 - Purchase Event
