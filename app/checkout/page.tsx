@@ -7,6 +7,10 @@ import Image from 'next/image';
 import { CreditCard, Truck, Shield } from 'lucide-react';
 import PixPayment from '@/components/PixPayment';
 
+// Forçar página a ser dinâmica (não fazer pre-render estático)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, getCartTotal, clearCart } = useCart();
