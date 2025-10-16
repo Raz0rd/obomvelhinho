@@ -1,0 +1,279 @@
+#cloud-config
+
+# Configuração inicial do servidor Hetzner para Next.js
+# Obom Velhinho - Árvores de Natal
+
+users:
+  - name: deploy
+    groups: sudo, docker
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJHJtFMQLje3MMxLa3Avri1ary7Qu70izsmSv5Xz1FdR annderrxavier@gmail.com
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - curl
+  - git
+  - nginx
+  - ufw
+  - fail2ban
+  - htop
+  - nano
+  - vim
+  - certbot
+  - python3-certbot-nginx
+  - build-essential
+  - sqlite3
+
+runcmd:
+  # Configurar Firewall
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+
+  # Instalar Node.js 20.x (LTS)
+  - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  - apt-get install -y nodejs
+
+  # Instalar PM2 (gerenciador de processos)
+  - npm install -g pm2
+
+  # Criar diretório da aplicação
+  - mkdir -p /var/www/obomvelhinho
+  - chown -R deploy:deploy /var/www/obomvelhinho
+
+  # Configurar Nginx como proxy reverso
+  - |
+    cat > /etc/nginx/sites-available/obomvelhinho << 'EOF'
+    server {
+        listen 80;
+        server_name obomvelhinho.store www.obomvelhinho.store;
+
+        client_max_body_size 50M;
+
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+        }
+    }
+    EOF
+
+  # Ativar site no Nginx
+  - ln -sf /etc/nginx/sites-available/obomvelhinho /etc/nginx/sites-enabled/
+  - rm -f /etc/nginx/sites-enabled/default
+  - nginx -t
+  - systemctl restart nginx
+  - systemctl enable nginx
+
+  # Configurar PM2 para iniciar no boot
+  - sudo -u deploy pm2 startup systemd -u deploy --hp /home/deploy
+  - pm2 save
+
+  # Configurar Fail2Ban (proteção contra ataques)
+  - systemctl enable fail2ban
+  - systemctl start fail2ban
+
+  # Configurar swap (2GB)
+  - fallocate -l 2G /swapfile
+  - chmod 600 /swapfile
+  - mkswap /swapfile
+  - swapon /swapfile
+  - echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+  # Otimizações do sistema
+  - |
+    cat >> /etc/sysctl.conf << EOF
+    vm.swappiness=10
+    vm.vfs_cache_pressure=50
+    net.core.rmem_max=16777216
+    net.core.wmem_max=16777216
+    net.ipv4.tcp_rmem=4096 87380 16777216
+    net.ipv4.tcp_wmem=4096 65536 16777216
+    EOF
+  - sysctl -p
+
+  # Criar script de deploy
+  - |
+    cat > /home/deploy/deploy.sh << 'DEPLOY_SCRIPT'
+    #!/bin/bash
+    set -e
+
+    echo "🚀 Iniciando deploy..."
+
+    cd /var/www/obomvelhinho
+
+    # Pull do código
+    git pull origin main
+
+    # Instalar dependências
+    npm install
+
+    # Build da aplicação
+    npm run build
+
+    # Reiniciar PM2
+    pm2 restart obomvelhinho || pm2 start npm --name obomvelhinho -- start
+
+    echo "✅ Deploy concluído!"
+    DEPLOY_SCRIPT
+
+  - chmod +x /home/deploy/deploy.sh
+  - chown deploy:deploy /home/deploy/deploy.sh
+
+  # Criar script de backup do banco de dados
+  - |
+    cat > /home/deploy/backup-db.sh << 'BACKUP_SCRIPT'
+    #!/bin/bash
+    BACKUP_DIR="/home/deploy/backups"
+    mkdir -p $BACKUP_DIR
+    DATE=$(date +%Y%m%d_%H%M%S)
+    cp /var/www/obomvelhinho/pedidos.db $BACKUP_DIR/pedidos_$DATE.db
+    find $BACKUP_DIR -name "pedidos_*.db" -mtime +7 -delete
+    echo "✅ Backup criado: pedidos_$DATE.db"
+    BACKUP_SCRIPT
+
+  - chmod +x /home/deploy/backup-db.sh
+  - chown deploy:deploy /home/deploy/backup-db.sh
+
+  # Agendar backup diário (3h da manhã)
+  - |
+    (crontab -u deploy -l 2>/dev/null; echo "0 3 * * * /home/deploy/backup-db.sh >> /home/deploy/backup.log 2>&1") | crontab -u deploy -
+
+  # Criar arquivo de instruções
+  - |
+    cat > /home/deploy/README.txt << 'README'
+    🎄 Servidor Obom Velhinho - Configurado!
+
+    📂 Diretório da aplicação: /var/www/obomvelhinho
+    👤 Usuário: deploy
+    🔑 SSH: Chave já configurada
+
+    🚀 PRÓXIMOS PASSOS:
+
+    1. Fazer SSH no servidor:
+       ssh deploy@SEU_IP
+
+    2. Clonar o repositório:
+       cd /var/www/obomvelhinho
+       git clone https://github.com/Raz0rd/obomvelhinho.git .
+
+    3. Configurar .env.local:
+       nano /var/www/obomvelhinho/.env.local
+       (Cole as variáveis de ambiente)
+
+    4. Fazer o primeiro deploy:
+       /home/deploy/deploy.sh
+
+    5. Configurar SSL (Let's Encrypt):
+       sudo certbot --nginx -d obomvelhinho.store -d www.obomvelhinho.store
+
+    📋 COMANDOS ÚTEIS:
+
+    - Ver logs da aplicação:
+      pm2 logs obomvelhinho
+
+    - Reiniciar aplicação:
+      pm2 restart obomvelhinho
+
+    - Status da aplicação:
+      pm2 status
+
+    - Fazer backup do banco:
+      /home/deploy/backup-db.sh
+
+    - Ver backups:
+      ls -lh /home/deploy/backups/
+
+    - Verificar Nginx:
+      sudo nginx -t
+      sudo systemctl status nginx
+
+    - Ver logs do Nginx:
+      sudo tail -f /var/log/nginx/access.log
+      sudo tail -f /var/log/nginx/error.log
+
+    🔒 SEGURANÇA:
+
+    - Firewall UFW: ✅ Ativo (portas 22, 80, 443)
+    - Fail2Ban: ✅ Ativo
+    - SSH com chave: ✅ Configurado
+    - Nginx como proxy: ✅ Configurado
+
+    📊 MONITORAMENTO:
+
+    - CPU/RAM: htop
+    - Disco: df -h
+    - Processos: pm2 monit
+
+    🎯 APONTAMENTO DNS (Cloudflare):
+
+    A Record:
+    Name: @
+    Content: SEU_IP_SERVIDOR
+    Proxy: ON (orange cloud)
+
+    A Record:
+    Name: www
+    Content: SEU_IP_SERVIDOR
+    Proxy: ON (orange cloud)
+
+    IMPORTANTE: www.obomvelhinho.store retorna 200 OK!
+
+    ✨ Servidor pronto para produção!
+    README
+
+  - chown deploy:deploy /home/deploy/README.txt
+
+write_files:
+  - path: /etc/systemd/system/obomvelhinho.service
+    content: |
+      [Unit]
+      Description=Obom Velhinho Next.js App
+      After=network.target
+
+      [Service]
+      Type=simple
+      User=deploy
+      WorkingDirectory=/var/www/obomvelhinho
+      ExecStart=/usr/bin/npm start
+      Restart=on-failure
+      RestartSec=10
+      Environment=NODE_ENV=production
+      Environment=PORT=3000
+
+      [Install]
+      WantedBy=multi-user.target
+
+final_message: |
+  🎄 Servidor Obom Velhinho configurado com sucesso!
+  
+  ✅ Node.js 20.x instalado
+  ✅ PM2 instalado
+  ✅ Nginx configurado
+  ✅ Firewall ativado (UFW)
+  ✅ Fail2Ban ativado
+  ✅ SSL pronto (Certbot)
+  ✅ Backups automáticos
+  ✅ SSH configurado
+  
+  🔑 SSH: ssh deploy@$HOSTNAME
+  📂 App: /var/www/obomvelhinho
+  📖 Leia: /home/deploy/README.txt
+  
+  Sistema pronto em $(uptime -p)
