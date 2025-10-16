@@ -244,6 +244,9 @@ export default function CheckoutPage() {
               evento: 'pending',
               transactionId: data.transactionId,
               email: formData.email,
+              nome: formData.nome,
+              telefone: removeFormatting(formData.telefone),
+              cpf: removeFormatting(formData.cpf),
               valor: total,
               items: items.map(item => ({
                 titulo: item.product.title + (item.selectedVariant ? ` - ${item.selectedVariant.name}` : ''),

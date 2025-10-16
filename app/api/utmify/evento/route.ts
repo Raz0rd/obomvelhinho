@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const { evento, transactionId, email, valor, items } = body;
+    const { evento, transactionId, email, nome, telefone, cpf, valor, items } = body;
 
     // Validação
     if (!evento || !transactionId || !email || !valor || !items) {
@@ -29,6 +29,9 @@ export async function POST(request: NextRequest) {
     const result = await enviarEventoUtmify(evento, {
       transactionId,
       email,
+      nome,
+      telefone,
+      cpf,
       valor,
       items
     });

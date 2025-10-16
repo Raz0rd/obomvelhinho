@@ -2,7 +2,7 @@ import Script from 'next/script';
 
 export default function Analytics() {
   const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || '';
-  const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || 'AW-17657798942';
+  const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || 'AW-17655865530';
   const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '';
 
   return (
