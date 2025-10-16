@@ -35,9 +35,17 @@ interface RastreioData {
 }
 
 export async function enviarEmailPedidoConfirmado(data: PedidoData) {
+  console.log('📧 [EMAIL] Iniciando envio de email de confirmação...');
+  console.log('📧 [EMAIL] Destinatário:', data.email);
+  console.log('📧 [EMAIL] Transaction ID:', data.transactionId);
+  console.log('📧 [EMAIL] RESEND_API_KEY configurada:', !!process.env.RESEND_API_KEY);
+  
   try {
+    console.log('📧 [EMAIL] Renderizando template...');
     const emailHtml = await render(PedidoConfirmado(data));
+    console.log('📧 [EMAIL] Template renderizado com sucesso');
 
+    console.log('📧 [EMAIL] Enviando via Resend...');
     const response = await resend.emails.send({
       from: 'Obom Velhinho <sac@obomvelhinho.store>',
       to: data.email,
@@ -45,10 +53,14 @@ export async function enviarEmailPedidoConfirmado(data: PedidoData) {
       html: emailHtml,
     });
 
-    console.log('✅ Email de confirmação enviado:', response);
+    console.log('✅ [EMAIL] Email de confirmação enviado com sucesso!');
+    console.log('✅ [EMAIL] Response:', JSON.stringify(response, null, 2));
     return { success: true, data: response };
-  } catch (error) {
-    console.error('❌ Erro ao enviar email de confirmação:', error);
+  } catch (error: any) {
+    console.error('❌ [EMAIL] ERRO ao enviar email de confirmação!');
+    console.error('❌ [EMAIL] Erro completo:', error);
+    console.error('❌ [EMAIL] Erro message:', error?.message);
+    console.error('❌ [EMAIL] Erro stack:', error?.stack);
     return { success: false, error };
   }
 }

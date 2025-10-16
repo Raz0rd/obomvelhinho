@@ -25,17 +25,28 @@ export async function POST(request: NextRequest) {
 
     // Se o status for PAID, buscar dados do pedido e enviar email
     if (status === 'PAID') {
+      console.log('💳 [ATUALIZAR-STATUS] Status PAID detectado! Preparando envio de email...');
+      console.log('💳 [ATUALIZAR-STATUS] Transaction ID:', transactionId);
+      
       try {
+        console.log('💳 [ATUALIZAR-STATUS] Buscando pedido no banco de dados...');
         const pedido = db.prepare(`
           SELECT * FROM pedidos WHERE transaction_id = ?
         `).get(transactionId) as any;
 
         if (pedido) {
+          console.log('💳 [ATUALIZAR-STATUS] Pedido encontrado!');
+          console.log('💳 [ATUALIZAR-STATUS] Cliente:', pedido.nome);
+          console.log('💳 [ATUALIZAR-STATUS] Email:', pedido.email);
+          
           // Parse dos items
           const items = JSON.parse(pedido.items);
+          console.log('💳 [ATUALIZAR-STATUS] Items parseados:', items.length, 'itens');
 
+          console.log('💳 [ATUALIZAR-STATUS] Chamando enviarEmailPedidoConfirmado...');
+          
           // Enviar email de confirmação
-          await enviarEmailPedidoConfirmado({
+          const emailResult = await enviarEmailPedidoConfirmado({
             nomeCliente: pedido.nome,
             email: pedido.email,
             transactionId: pedido.transaction_id,
@@ -52,10 +63,19 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          console.log(`✅ Email de confirmação enviado para ${pedido.email}`);
+          if (emailResult.success) {
+            console.log(`✅ [ATUALIZAR-STATUS] Email de confirmação enviado para ${pedido.email}`);
+          } else {
+            console.error(`❌ [ATUALIZAR-STATUS] Falha ao enviar email para ${pedido.email}`);
+            console.error('❌ [ATUALIZAR-STATUS] Erro:', emailResult.error);
+          }
+        } else {
+          console.error('❌ [ATUALIZAR-STATUS] Pedido não encontrado no banco!');
         }
-      } catch (emailError) {
-        console.error('⚠️ Erro ao enviar email (pedido atualizado com sucesso):', emailError);
+      } catch (emailError: any) {
+        console.error('⚠️ [ATUALIZAR-STATUS] EXCEÇÃO ao enviar email (pedido atualizado com sucesso)');
+        console.error('⚠️ [ATUALIZAR-STATUS] Erro:', emailError);
+        console.error('⚠️ [ATUALIZAR-STATUS] Stack:', emailError?.stack);
         // Não falha a requisição se o email falhar
       }
     }
