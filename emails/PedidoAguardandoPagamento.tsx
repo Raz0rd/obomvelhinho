@@ -12,7 +12,7 @@ import {
   Hr,
 } from '@react-email/components';
 
-interface PedidoConfirmadoProps {
+interface PedidoAguardandoPagamentoProps {
   nomeCliente: string;
   transactionId: string;
   items: Array<{
@@ -33,7 +33,7 @@ interface PedidoConfirmadoProps {
   };
 }
 
-export default function PedidoConfirmado({
+export default function PedidoAguardandoPagamento({
   nomeCliente = 'Cliente',
   transactionId = 'XXXX-XXXX',
   items = [],
@@ -46,11 +46,11 @@ export default function PedidoConfirmado({
     cidade: '',
     estado: '',
   },
-}: PedidoConfirmadoProps) {
+}: PedidoAguardandoPagamentoProps) {
   return (
     <Html>
       <Head />
-      <Preview>🎉 Pagamento Confirmado - Pedido #{transactionId}</Preview>
+      <Preview>✅ Pedido Confirmado - Aguardando Pagamento #{transactionId}</Preview>
       <Body style={main}>
         <Container style={container}>
           {/* Logo */}
@@ -65,25 +65,21 @@ export default function PedidoConfirmado({
           </Section>
 
           {/* Título */}
-          <Heading style={h1}>✅ Pagamento Confirmado!</Heading>
+          <Heading style={h1}>✅ Pedido Confirmado!</Heading>
           
           <Text style={text}>
             Olá <strong>{nomeCliente}</strong>,
           </Text>
 
           <Text style={text}>
-            Ótimas notícias! Seu pagamento foi confirmado com sucesso! 🎉
-          </Text>
-
-          <Text style={text}>
-            Seu pedido já está <strong>em processamento</strong> e será preparado para envio em breve.
+            Recebemos seu pedido com sucesso! Agora é só realizar o pagamento via PIX para confirmarmos. 🎄
           </Text>
 
           {/* Box de Destaque */}
           <Section style={statusBox}>
-            <Text style={statusTitle}>✅ Pedido em Processamento</Text>
+            <Text style={statusTitle}>⏳ Aguardando Pagamento</Text>
             <Text style={statusText}>
-              Aguarde! Em breve você receberá mais informações no email, incluindo o código de rastreio para acompanhar seu pedido. 📦
+              O QR Code PIX foi gerado. Complete o pagamento para darmos sequência ao seu pedido.
             </Text>
           </Section>
 
@@ -129,19 +125,13 @@ export default function PedidoConfirmado({
 
           {/* Próximos Passos */}
           <Section style={infoBox}>
-            <Text style={infoTitle}>📦 Próximos Passos</Text>
+            <Text style={infoTitle}>📌 Próximos Passos</Text>
             <Text style={infoText}>
-              1. Estamos separando e embalando seus produtos com todo cuidado<br />
-              2. Em breve você receberá o código de rastreio por email<br />
-              3. Fique de olho na sua caixa de entrada! 📧
+              1. Complete o pagamento via PIX usando o QR Code gerado<br />
+              2. Após a confirmação do pagamento, você receberá um novo email<br />
+              3. Seu pedido entrará em processamento<br />
+              4. Em breve você receberá o código de rastreio
             </Text>
-          </Section>
-
-          {/* CTA */}
-          <Section style={buttonSection}>
-            <Link href="https://obomvelhinho.store" style={button}>
-              Continuar Comprando
-            </Link>
           </Section>
 
           {/* Footer */}
@@ -179,7 +169,7 @@ export default function PedidoConfirmado({
   );
 }
 
-// Estilos
+// Estilos (mesmos do template anterior)
 const main = {
   backgroundColor: '#f6f9fc',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -218,8 +208,8 @@ const text = {
 };
 
 const statusBox = {
-  backgroundColor: '#f0fdf4',
-  border: '2px solid #86efac',
+  backgroundColor: '#fef3c7',
+  border: '2px solid #fbbf24',
   borderRadius: '8px',
   padding: '20px',
   margin: '30px 40px',
@@ -229,55 +219,13 @@ const statusBox = {
 const statusTitle = {
   fontSize: '18px',
   fontWeight: 'bold',
-  color: '#166534',
+  color: '#78350f',
   marginBottom: '10px',
 };
 
 const statusText = {
   fontSize: '14px',
-  color: '#15803d',
-  margin: 0,
-};
-
-const statusSteps = {
-  display: 'flex',
-  flexDirection: 'column' as const,
-  gap: '10px',
-};
-
-const stepActive = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  padding: '10px',
-  backgroundColor: '#dcfce7',
-  borderRadius: '6px',
-};
-
-const stepPending = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  padding: '10px',
-};
-
-const stepNumber = {
-  backgroundColor: '#16a34a',
-  color: '#ffffff',
-  width: '30px',
-  height: '30px',
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '14px',
-  fontWeight: 'bold',
-  margin: 0,
-};
-
-const stepLabel = {
-  fontSize: '14px',
-  color: '#374151',
+  color: '#92400e',
   margin: 0,
 };
 
@@ -361,8 +309,8 @@ const totalValue = {
 };
 
 const addressSection = {
-  backgroundColor: '#fef3c7',
-  border: '2px solid #fbbf24',
+  backgroundColor: '#eff6ff',
+  border: '2px solid #3b82f6',
   borderRadius: '8px',
   padding: '20px',
   margin: '20px 40px',
@@ -371,19 +319,19 @@ const addressSection = {
 const addressTitle = {
   fontSize: '16px',
   fontWeight: 'bold',
-  color: '#78350f',
+  color: '#1e40af',
   marginBottom: '10px',
 };
 
 const addressText = {
   fontSize: '14px',
-  color: '#92400e',
+  color: '#1e3a8a',
   lineHeight: '20px',
   margin: 0,
 };
 
 const infoBox = {
-  backgroundColor: '#eff6ff',
+  backgroundColor: '#f0fdf4',
   borderRadius: '8px',
   padding: '20px',
   margin: '20px 40px',
@@ -392,32 +340,15 @@ const infoBox = {
 const infoTitle = {
   fontSize: '16px',
   fontWeight: 'bold',
-  color: '#1e40af',
+  color: '#166534',
   marginBottom: '10px',
 };
 
 const infoText = {
   fontSize: '14px',
-  color: '#1e3a8a',
+  color: '#15803d',
   lineHeight: '22px',
   margin: 0,
-};
-
-const buttonSection = {
-  textAlign: 'center' as const,
-  margin: '30px 0',
-};
-
-const button = {
-  backgroundColor: '#dc2626',
-  borderRadius: '6px',
-  color: '#ffffff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '12px 40px',
 };
 
 const footer = {

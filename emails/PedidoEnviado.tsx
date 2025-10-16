@@ -111,12 +111,14 @@ export default function PedidoEnviado({
           <Section style={footer}>
             <Text style={footerText}>
               <strong>Obom Velhinho - Árvores e Decorações de Natal</strong><br />
-              CNPJ: XX.XXX.XXX/0001-XX<br />
-              Endereço: Rua Exemplo, 123 - São Paulo, SP<br />
-              Email: sac@obomvelhinho.store<br />
-              WhatsApp: (11) 9xxxx-xxxx
-            </Text>
-            
+              CNPJ: 57.161.373/0001-61<br />
+              AV CORBELIA, 470 - SALA 01<br />
+              MORUMBI - CASCAVEL/PR<br />
+              CEP: 85.817-775<br />
+              Telefone: (45) 9111-9366<br />
+              Site: obomvelhinho.store<br />
+              Email: sac@obomvelhinho.store
+            </Text>            
             <Text style={footerLinks}>
               <Link href="https://obomvelhinho.store/politica-de-privacidade" style={footerLink}>
                 Política de Privacidade

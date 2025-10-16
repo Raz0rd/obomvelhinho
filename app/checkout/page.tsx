@@ -205,7 +205,7 @@ export default function CheckoutPage() {
 
         // Enviar email de QR Code gerado (pedido aguardando pagamento)
         try {
-          await fetch('/api/email/pedido-confirmado', {
+          await fetch('/api/email/aguardando-pagamento', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
