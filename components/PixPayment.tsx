@@ -93,9 +93,11 @@ export default function PixPayment({ transactionId, qrCode, amount, onSuccess, o
   }, []);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(qrCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (typeof window !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(qrCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const formatTime = (seconds: number) => {
