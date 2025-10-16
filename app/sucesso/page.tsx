@@ -29,7 +29,7 @@ function SucessoContent() {
       console.log('🎯 Valor:', valor);
       
       (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-17657798942/SEU_LABEL_AQUI', // CONFIGURE O LABEL NO GOOGLE ADS
+        'send_to': 'AW-17657798942/8A7OCOmxva4bEJ7C8uNB',
         'value': valor ? parseFloat(valor) : 0,
         'currency': 'BRL',
         'transaction_id': transactionId

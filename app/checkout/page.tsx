@@ -199,6 +199,65 @@ export default function CheckoutPage() {
           })
         });
 
+        // Enviar email de QR Code gerado (pedido aguardando pagamento)
+        try {
+          await fetch('/api/email/pedido-confirmado', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              nomeCliente: formData.nome,
+              email: formData.email,
+              transactionId: data.transactionId,
+              items: items.map(item => ({
+                titulo: item.product.title + (item.selectedVariant ? ` - ${item.selectedVariant.name}` : ''),
+                quantidade: item.quantity,
+                preco: item.selectedVariant?.price || item.product.priceWithDiscount || item.product.price
+              })),
+              total: total,
+              endereco: {
+                cep: removeFormatting(formData.cep),
+                endereco: formData.endereco,
+                numero: formData.numero,
+                complemento: formData.complemento,
+                bairro: formData.bairro,
+                cidade: formData.cidade,
+                estado: formData.estado
+              }
+            })
+          });
+          console.log('📧 Email de QR Code gerado enviado');
+        } catch (emailError) {
+          console.error('⚠️ Erro ao enviar email de QR Code:', emailError);
+          // Não bloqueia o fluxo se email falhar
+        }
+
+        // Enviar evento PENDING para Utmify
+        try {
+          await fetch('/api/utmify/evento', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              evento: 'pending',
+              transactionId: data.transactionId,
+              email: formData.email,
+              valor: total,
+              items: items.map(item => ({
+                titulo: item.product.title + (item.selectedVariant ? ` - ${item.selectedVariant.name}` : ''),
+                quantidade: item.quantity,
+                preco: item.selectedVariant?.price || item.product.priceWithDiscount || item.product.price
+              }))
+            })
+          });
+          console.log('🔔 Evento PENDING enviado para Utmify');
+        } catch (utmifyError) {
+          console.error('⚠️ Erro ao enviar evento Utmify:', utmifyError);
+          // Não bloqueia o fluxo se Utmify falhar
+        }
+
         // Exibir modal do PIX
         setPixData({
           transactionId: data.transactionId,
