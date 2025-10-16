@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import TopBanner from "@/components/TopBanner";
 import Footer from "@/components/Footer";
 import FeaturesCarousel from "@/components/FeaturesCarousel";
+import Analytics from "@/components/Analytics";
 
 export const metadata: Metadata = {
   title: "Obom Velhinho - Árvores e Decorações de Natal",
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="antialiased min-h-screen bg-gray-50">
+        <Analytics />
         <CartProvider>
           <TopBanner />
           <Header />

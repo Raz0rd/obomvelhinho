@@ -31,3 +31,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# imagens e videos (muito pesado)
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.webp
+logoOBomvelhinho*.png
+/public/products/

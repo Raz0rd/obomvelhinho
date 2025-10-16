@@ -217,8 +217,15 @@ export default function CheckoutPage() {
 
   const handlePixSuccess = () => {
     clearCart();
-    alert('Pagamento confirmado! Em breve você receberá um email com os detalhes do pedido.');
-    router.push('/');
+    
+    // Redirecionar para página de sucesso com dados do pedido
+    const params = new URLSearchParams({
+      transactionId: pixData?.transactionId || '',
+      valor: (pixData?.amount ? (pixData.amount / 100).toFixed(2) : '0'),
+      email: formData.email
+    });
+    
+    router.push(`/sucesso?${params.toString()}`);
   };
 
   const handlePixClose = () => {
