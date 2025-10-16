@@ -113,6 +113,18 @@ export default function CheckoutPage() {
       formattedValue = formatPhone(value);
     } else if (name === 'cep') {
       formattedValue = formatCEP(value);
+      
+      // Buscar CEP automaticamente quando completar 8 dígitos
+      const cepNumeros = value.replace(/\D/g, '');
+      if (cepNumeros.length === 8 && !loadingCep) {
+        // Aguardar um pouco para garantir que o estado foi atualizado
+        setTimeout(() => {
+          buscarCepAutomatico(cepNumeros);
+        }, 100);
+      } else if (cepNumeros.length < 8 && cepLoaded) {
+        // Limpar campos se o usuário apagar o CEP
+        setCepLoaded(false);
+      }
     }
     
     setFormData(prev => ({ ...prev, [name]: formattedValue }));
@@ -305,12 +317,8 @@ export default function CheckoutPage() {
     setIsProcessing(false);
   };
 
-  const buscarCep = async () => {
-    const cep = formData.cep.replace(/\D/g, '');
-    if (cep.length !== 8) {
-      alert('Digite um CEP válido com 8 dígitos');
-      return;
-    }
+  const buscarCepAutomatico = async (cep: string) => {
+    if (cep.length !== 8) return;
 
     setLoadingCep(true);
 
@@ -413,91 +421,79 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">CEP *</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      name="cep"
-                      value={formData.cep}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="00000-000"
-                      maxLength={9}
-                      disabled={cepLoaded}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100"
-                    />
-                    {!cepLoaded ? (
-                      <button
-                        type="button"
-                        onClick={buscarCep}
-                        disabled={loadingCep || formData.cep.replace(/\D/g, '').length !== 8}
-                        className="px-6 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
-                      >
-                        {loadingCep ? 'Buscando...' : 'Buscar'}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCepLoaded(false);
-                          setFormData(prev => ({ ...prev, cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '' }));
-                        }}
-                        className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
-                      >
-                        Alterar
-                      </button>
-                    )}
-                  </div>
+                  <input
+                    type="text"
+                    name="cep"
+                    value={formData.cep}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="00000-000"
+                    maxLength={9}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                  {loadingCep && (
+                    <p className="text-sm text-blue-600 mt-1">🔍 Buscando endereço...</p>
+                  )}
                 </div>
 
                 {/* Campos que aparecem após buscar CEP */}
                 {cepLoaded && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Endereço *</label>
-                      <input
-                        type="text"
-                        name="endereco"
-                        value={formData.endereco}
-                        onChange={handleInputChange}
-                        required
-                        readOnly
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                      />
+                  <>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                      <Truck className="text-green-600 mt-0.5" size={20} />
+                      <div>
+                        <p className="font-semibold text-green-800">Prazo de Entrega</p>
+                        <p className="text-sm text-green-700">Receba em 7 a 15 dias úteis após a confirmação do pagamento</p>
+                      </div>
                     </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Bairro *</label>
-                      <input
-                        type="text"
-                        name="bairro"
-                        value={formData.bairro}
-                        onChange={handleInputChange}
-                        required
-                        readOnly
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
-                      <input
-                        type="text"
-                        name="cidade"
-                        value={formData.cidade}
-                        onChange={handleInputChange}
-                        required
-                        readOnly
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
-                      <input
-                        type="text"
-                        name="estado"
-                        value={formData.estado}
-                        onChange={handleInputChange}
-                        required
-                        readOnly
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Endereço *</label>
+                        <input
+                          type="text"
+                          name="endereco"
+                          value={formData.endereco}
+                          onChange={handleInputChange}
+                          required
+                          readOnly
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bairro *</label>
+                        <input
+                          type="text"
+                          name="bairro"
+                          value={formData.bairro}
+                          onChange={handleInputChange}
+                          required
+                          readOnly
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
+                        <input
+                          type="text"
+                          name="cidade"
+                          value={formData.cidade}
+                          onChange={handleInputChange}
+                          required
+                          readOnly
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
+                        <input
+                          type="text"
+                          name="estado"
+                          value={formData.estado}
+                          onChange={handleInputChange}
+                          required
+                          readOnly
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
                       />
                     </div>
                     <div>
@@ -508,22 +504,23 @@ export default function CheckoutPage() {
                         value={formData.numero}
                         onChange={handleInputChange}
                         required
-                        placeholder="Ex: 123"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        placeholder="123"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900"
                       />
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
                       <input
                         type="text"
                         name="complemento"
                         value={formData.complemento}
                         onChange={handleInputChange}
-                        placeholder="Ex: Apto 201"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        placeholder="Apto, Bloco, etc."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900"
                       />
                     </div>
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
