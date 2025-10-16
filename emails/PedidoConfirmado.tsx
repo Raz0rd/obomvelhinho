@@ -127,6 +127,14 @@ export default function PedidoConfirmado({
             </Text>
           </Section>
 
+          {/* Prazo de Entrega */}
+          <Section style={deliveryBox}>
+            <Text style={deliveryTitle}>🚚 Prazo de Entrega</Text>
+            <Text style={deliveryText}>
+              Seu pedido será entregue em <strong>7 a 15 dias úteis</strong> após a confirmação do pagamento.
+            </Text>
+          </Section>
+
           {/* Próximos Passos */}
           <Section style={infoBox}>
             <Text style={infoTitle}>📦 Próximos Passos</Text>
@@ -378,6 +386,29 @@ const addressTitle = {
 const addressText = {
   fontSize: '14px',
   color: '#92400e',
+  lineHeight: '20px',
+  margin: 0,
+};
+
+const deliveryBox = {
+  backgroundColor: '#f0fdf4',
+  border: '2px solid #86efac',
+  borderRadius: '8px',
+  padding: '20px',
+  margin: '20px 40px',
+  textAlign: 'center' as const,
+};
+
+const deliveryTitle = {
+  fontSize: '16px',
+  fontWeight: 'bold',
+  color: '#166534',
+  marginBottom: '10px',
+};
+
+const deliveryText = {
+  fontSize: '14px',
+  color: '#15803d',
   lineHeight: '20px',
   margin: 0,
 };
