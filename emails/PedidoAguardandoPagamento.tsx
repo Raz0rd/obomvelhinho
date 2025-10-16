@@ -56,7 +56,7 @@ export default function PedidoAguardandoPagamento({
           {/* Logo */}
           <Section style={logoSection}>
             <Img
-              src="https://obomvelhinho.store/logoOBomvelhinho.webp"
+              src="https://obomvelhinho.com/logoOBomvelhinho.webp"
               width="120"
               height="120"
               alt="Obom Velhinho"
@@ -153,22 +153,22 @@ export default function PedidoAguardandoPagamento({
               MORUMBI - CASCAVEL/PR<br />
               CEP: 85.817-775<br />
               Telefone: (45) 9111-9366<br />
-              Site: obomvelhinho.store<br />
-              Email: sac@obomvelhinho.store
+              Site: obomvelhinho.com<br />
+              Email: sac@obomvelhinho.com
             </Text>
             
             <Text style={footerLinks}>
-              <Link href="https://obomvelhinho.store/politica-de-privacidade" style={footerLink}>
+              <Link href="https://obomvelhinho.com/politica-de-privacidade" style={footerLink}>
                 Política de Privacidade
               </Link>
               {' | '}
-              <Link href="https://obomvelhinho.store/termos-de-uso" style={footerLink}>
+              <Link href="https://obomvelhinho.com/termos-de-uso" style={footerLink}>
                 Termos de Uso
               </Link>
             </Text>
 
             <Text style={footerDisclaimer}>
-              Este é um email automático, por favor não responda. Para falar conosco, utilize sac@obomvelhinho.store
+              Este é um email automático, por favor não responda. Para falar conosco, utilize sac@obomvelhinho.com
             </Text>
           </Section>
         </Container>

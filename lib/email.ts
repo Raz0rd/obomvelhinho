@@ -49,7 +49,7 @@ export async function enviarEmailAguardandoPagamento(data: PedidoData) {
 
     console.log('📧 [EMAIL] Enviando via Resend...');
     const response = await resend.emails.send({
-      from: 'Obom Velhinho <sac@obomvelhinho.store>',
+      from: 'Obom Velhinho <sac@obomvelhinho.com>',
       to: data.email,
       subject: `✅ Pedido Confirmado - Aguardando Pagamento #${data.transactionId}`,
       html: emailHtml,
@@ -80,7 +80,7 @@ export async function enviarEmailPedidoConfirmado(data: PedidoData) {
 
     console.log('📧 [EMAIL] Enviando via Resend...');
     const response = await resend.emails.send({
-      from: 'Obom Velhinho <sac@obomvelhinho.store>',
+      from: 'Obom Velhinho <sac@obomvelhinho.com>',
       to: data.email,
       subject: `🎉 Pagamento Confirmado - Pedido #${data.transactionId}`,
       html: emailHtml,
@@ -103,9 +103,9 @@ export async function enviarEmailPedidoEnviado(data: RastreioData) {
     const emailHtml = await render(PedidoEnviado(data));
 
     const response = await resend.emails.send({
-      from: 'Obom Velhinho <sac@obomvelhinho.store>',
+      from: 'Obom Velhinho <sac@obomvelhinho.com>',
       to: data.email,
-      subject: `📦 Seu Pedido Foi Enviado - Código de Rastreio #${data.transactionId}`,
+      subject: `📦 Seu pedido foi enviado! - #${data.transactionId}`,
       html: emailHtml,
     });
 
