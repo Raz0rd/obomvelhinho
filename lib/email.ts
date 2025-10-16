@@ -33,6 +33,7 @@ interface RastreioData {
   email: string;
   transactionId: string;
   codigoRastreio: string;
+  linkRastreio?: string;
 }
 
 export async function enviarEmailAguardandoPagamento(data: PedidoData) {

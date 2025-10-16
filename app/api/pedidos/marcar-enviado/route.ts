@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { pedidoIds, codigoRastreio } = await request.json();
+    const { pedidoIds, codigoRastreio, urlRastreio } = await request.json();
 
     if (!pedidoIds || !Array.isArray(pedidoIds) || pedidoIds.length === 0) {
       return NextResponse.json(
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
           email: pedido.email,
           transactionId: pedido.transaction_id,
           codigoRastreio: codigoRastreio,
+          linkRastreio: urlRastreio,
         });
         
         console.log(`✅ Email de rastreio enviado para ${pedido.email}`);

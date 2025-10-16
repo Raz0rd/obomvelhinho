@@ -31,6 +31,7 @@ export default function AdminPedidos() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [codigoRastreio, setCodigoRastreio] = useState('');
+  const [urlRastreio, setUrlRastreio] = useState('');
   const [filtro, setFiltro] = useState('todos');
   const [busca, setBusca] = useState('');
   const [copiedColumn, setCopiedColumn] = useState<string | null>(null);
@@ -102,7 +103,8 @@ export default function AdminPedidos() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           pedidoIds: selectedIds,
-          codigoRastreio: codigoRastreio || null
+          codigoRastreio: codigoRastreio || null,
+          urlRastreio: urlRastreio || null
         })
       });
 
@@ -112,6 +114,7 @@ export default function AdminPedidos() {
         alert(data.message);
         setSelectedIds([]);
         setCodigoRastreio('');
+        setUrlRastreio('');
         carregarPedidos();
       } else {
         alert('Erro: ' + data.error);
@@ -295,17 +298,26 @@ export default function AdminPedidos() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              value={codigoRastreio}
-              onChange={(e) => setCodigoRastreio(e.target.value)}
-              placeholder="Código de Rastreio (opcional)"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                value={codigoRastreio}
+                onChange={(e) => setCodigoRastreio(e.target.value)}
+                placeholder="Código de Rastreio (obrigatório)"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <input
+                type="url"
+                value={urlRastreio}
+                onChange={(e) => setUrlRastreio(e.target.value)}
+                placeholder="URL de Rastreio (opcional) - Ex: https://rastreamento.correios.com.br"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
             <button
               onClick={marcarComoEnviado}
-              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors w-full md:w-auto"
             >
               <Send size={20} />
               Marcar como Enviado
