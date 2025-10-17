@@ -13,6 +13,10 @@ function SucessoContent() {
   const valor = searchParams.get('valor');
   const email = searchParams.get('email');
 
+  // Tags de conversão das variáveis de ambiente
+  const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || '';
+  const GOOGLE_ADS_CONVERSION_LABEL = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || '';
+
   useEffect(() => {
     // Se não tem transactionId, redireciona para home
     if (!transactionId) {
@@ -21,15 +25,17 @@ function SucessoContent() {
     }
 
     // Google Ads Conversion Tracking
-    // IMPORTANTE: Pegue o LABEL de conversão no Google Ads > Conversões > Sua conversão > Tag
-    // Formato: AW-17657798942/SEU_LABEL_AQUI
-    if (typeof window !== 'undefined' && (window as any).gtag) {
+    // Tag de conversão montada dinamicamente: AW-XXXXXXX/LABEL
+    if (typeof window !== 'undefined' && (window as any).gtag && GOOGLE_ADS_ID && GOOGLE_ADS_CONVERSION_LABEL) {
+      const conversionTag = `${GOOGLE_ADS_ID}/${GOOGLE_ADS_CONVERSION_LABEL}`;
+      
       console.log('🎯 Disparando conversão Google Ads');
+      console.log('🎯 Conversion Tag:', conversionTag);
       console.log('🎯 Transaction ID:', transactionId);
       console.log('🎯 Valor:', valor);
       
       (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-17657798942/8A7OCOmxva4bEJ7C8uNB',
+        'send_to': conversionTag,
         'value': valor ? parseFloat(valor) : 0,
         'currency': 'BRL',
         'transaction_id': transactionId
@@ -56,7 +62,7 @@ function SucessoContent() {
         transaction_id: transactionId
       });
     }
-  }, [transactionId, valor, router]);
+  }, [transactionId, valor, router, GOOGLE_ADS_ID, GOOGLE_ADS_CONVERSION_LABEL]);
 
   if (!transactionId) {
     return null;
