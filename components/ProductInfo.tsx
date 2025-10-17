@@ -1,7 +1,7 @@
 'use client';
 
 import { Product } from '@/types/product';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShoppingCart, Truck, Shield, CreditCard } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useRouter } from 'next/navigation';
@@ -13,14 +13,39 @@ interface ProductInfoProps {
 export default function ProductInfo({ product }: ProductInfoProps) {
   const router = useRouter();
   const { addToCart } = useCart();
-  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  
+  // Inicializar com a primeira variante selecionada
+  const getFirstVariant = () => {
+    if (product.variants.length > 0) {
+      const firstVariant = product.variants.find(v => v.position === 0) || product.variants[0];
+      if (firstVariant && firstVariant.options.length > 0) {
+        const firstOption = firstVariant.options.find(o => o.position === 0) || firstVariant.options[0];
+        return { variantId: firstVariant.id, optionId: firstOption.id, price: firstOption.price };
+      }
+    }
+    return null;
+  };
 
-  const discountPercentage = product.priceWithDiscount > 0
-    ? Math.round(((product.price - product.priceWithDiscount) / product.price) * 100)
+  const firstVariant = getFirstVariant();
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(firstVariant?.variantId || null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(firstVariant?.optionId || null);
+  const [currentPrice, setCurrentPrice] = useState<number>(firstVariant?.price || product.priceWithDiscount || product.price);
+
+  // Atualizar preço quando a variante mudar
+  useEffect(() => {
+    if (selectedOption) {
+      const option = product.variants
+        .flatMap(v => v.options)
+        .find(opt => opt.id === selectedOption);
+      if (option) {
+        setCurrentPrice(option.price);
+      }
+    }
+  }, [selectedOption, product.variants]);
+
+  const discountPercentage = currentPrice < product.price
+    ? Math.round(((product.price - currentPrice) / product.price) * 100)
     : 0;
-
-  const currentPrice = product.priceWithDiscount > 0 ? product.priceWithDiscount : product.price;
 
   // Limpar HTML da descrição para exibição
   const cleanDescription = product.description
@@ -42,7 +67,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Preço */}
       <div className="border-t border-b py-4">
-        {product.priceWithDiscount > 0 && (
+        {discountPercentage > 0 && (
           <p className="text-lg text-gray-400 line-through">
             De R$ {product.price.toFixed(2).replace('.', ',')}
           </p>
@@ -92,16 +117,12 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       {/* Botão Comprar */}
       <button 
         onClick={() => {
-          // Se tem variantes, validar seleção
-          if (product.variants.length > 0 && !selectedOption) {
-            alert('Por favor, selecione uma opção antes de adicionar ao carrinho');
-            return;
-          }
-
-          // Encontrar a variante selecionada
-          const variant = product.variants
-            .flatMap(v => v.options)
-            .find(opt => opt.id === selectedOption);
+          // Encontrar a variante selecionada (sempre terá uma se houver variantes)
+          const variant = product.variants.length > 0
+            ? product.variants
+                .flatMap(v => v.options)
+                .find(opt => opt.id === selectedOption)
+            : undefined;
 
           // Adicionar ao carrinho
           addToCart(product, variant, 1);
