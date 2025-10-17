@@ -21,6 +21,7 @@ export default function CheckoutPage() {
     qrCode: string;
     amount: number;
   } | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [formData, setFormData] = useState({
     // Dados Pessoais
@@ -132,6 +133,12 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Mostrar modal de confirmação primeiro
+    setShowConfirmModal(true);
+  };
+
+  const processPayment = async () => {
     setIsProcessing(true);
 
     try {
@@ -296,6 +303,8 @@ export default function CheckoutPage() {
       console.error('Erro ao processar pedido:', error);
       alert('Erro ao processar pedido. Tente novamente.');
       setIsProcessing(false);
+    } finally {
+      setShowConfirmModal(false);
     }
   };
 
@@ -439,11 +448,11 @@ export default function CheckoutPage() {
                 {/* Campos que aparecem após buscar CEP */}
                 {cepLoaded && (
                   <>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-                      <Truck className="text-green-600 mt-0.5" size={20} />
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-start gap-3">
+                      <Truck className="text-gray-700 mt-0.5" size={20} />
                       <div>
-                        <p className="font-semibold text-green-800">Prazo de Entrega</p>
-                        <p className="text-sm text-green-700">Receba em 7 a 15 dias úteis após a confirmação do pagamento</p>
+                        <p className="font-semibold text-gray-800">Prazo de Entrega</p>
+                        <p className="text-sm text-gray-700">Receba em 7 a 15 dias úteis após a confirmação do pagamento</p>
                       </div>
                     </div>
                     
@@ -651,6 +660,114 @@ export default function CheckoutPage() {
         </div>
         </div>
       </div>
+
+      {/* Modal de Confirmação */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">⚠️ Confirme seus dados antes de continuar</h2>
+              
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <p className="text-sm text-gray-800 leading-relaxed">
+                  Por favor, <strong>revise seus dados com atenção</strong>. Informações incorretas podem causar problemas na entrega e na emissão da nota fiscal.
+                </p>
+              </div>
+
+              {/* Dados Pessoais */}
+              <div className="mb-6">
+                <h3 className="font-bold text-gray-800 mb-3 text-lg border-b pb-2">Dados Pessoais</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">Nome:</span>
+                    <span className="text-gray-800">{formData.nome}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">Email:</span>
+                    <span className="text-gray-800">{formData.email}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">Telefone:</span>
+                    <span className="text-gray-800">{formData.telefone}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">CPF:</span>
+                    <span className="text-gray-800">{formData.cpf}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Endereço */}
+              <div className="mb-6">
+                <h3 className="font-bold text-gray-800 mb-3 text-lg border-b pb-2">Endereço de Entrega</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">CEP:</span>
+                    <span className="text-gray-800">{formData.cep}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">Endereço:</span>
+                    <span className="text-gray-800">{formData.endereco}, {formData.numero}</span>
+                  </div>
+                  {formData.complemento && (
+                    <div className="flex">
+                      <span className="font-semibold text-gray-700 w-32">Complemento:</span>
+                      <span className="text-gray-800">{formData.complemento}</span>
+                    </div>
+                  )}
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">Bairro:</span>
+                    <span className="text-gray-800">{formData.bairro}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="font-semibold text-gray-700 w-32">Cidade:</span>
+                    <span className="text-gray-800">{formData.cidade} - {formData.estado}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Avisos Importantes */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <h4 className="font-bold text-gray-800 mb-3">📌 Informações Importantes:</h4>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold mt-0.5">•</span>
+                    <span><strong>Email:</strong> Certifique-se de que o email está correto. Você receberá atualizações do pedido neste endereço.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold mt-0.5">•</span>
+                    <span><strong>CPF:</strong> O CPF será usado para emissão da nota fiscal. Dados incorretos podem causar problemas fiscais.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold mt-0.5">•</span>
+                    <span><strong>Endereço:</strong> Confira se o endereço está completo. Use o campo "Complemento" para informações adicionais (apartamento, bloco, etc).</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Botões */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
+                  disabled={isProcessing}
+                >
+                  ← Voltar e Corrigir
+                </button>
+                <button
+                  type="button"
+                  onClick={processPayment}
+                  disabled={isProcessing}
+                  className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold rounded-lg transition"
+                >
+                  {isProcessing ? 'Gerando QR Code...' : 'Confirmar e Gerar QR Code →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Pagamento PIX */}
       {pixData && (
