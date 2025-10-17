@@ -8,8 +8,23 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const mainImage = product.images.find(img => img.position === 0) || product.images[0];
-  const discountPercentage = product.priceWithDiscount > 0
-    ? Math.round(((product.price - product.priceWithDiscount) / product.price) * 100)
+  
+  // Usar preço da primeira variante se existir, senão usar preço do produto
+  const getFirstVariantPrice = () => {
+    if (product.variants.length > 0) {
+      const firstVariant = product.variants.find(v => v.position === 0) || product.variants[0];
+      if (firstVariant && firstVariant.options.length > 0) {
+        const firstOption = firstVariant.options.find(o => o.position === 0) || firstVariant.options[0];
+        return firstOption.price;
+      }
+    }
+    return product.priceWithDiscount > 0 ? product.priceWithDiscount : product.price;
+  };
+
+  const displayPrice = getFirstVariantPrice();
+  const originalPrice = product.price;
+  const discountPercentage = displayPrice < originalPrice
+    ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100)
     : 0;
 
   return (
@@ -39,18 +54,18 @@ export default function ProductCard({ product }: ProductCardProps) {
           </h3>
 
           <div className="mt-auto">
-            {product.priceWithDiscount > 0 ? (
+            {discountPercentage > 0 ? (
               <div className="space-y-0.5">
                 <p className="text-[10px] text-gray-400 line-through">
-                  De R$ {product.price.toFixed(2).replace('.', ',')}
+                  De R$ {originalPrice.toFixed(2).replace('.', ',')}
                 </p>
                 <p className="text-sm font-bold text-red-600">
-                  R$ {product.priceWithDiscount.toFixed(2).replace('.', ',')}
+                  R$ {displayPrice.toFixed(2).replace('.', ',')}
                 </p>
               </div>
             ) : (
               <p className="text-sm font-bold text-red-600">
-                R$ {product.price.toFixed(2).replace('.', ',')}
+                R$ {displayPrice.toFixed(2).replace('.', ',')}
               </p>
             )}
             
