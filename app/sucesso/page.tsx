@@ -29,7 +29,7 @@ function SucessoContent() {
     if (typeof window !== 'undefined' && (window as any).gtag && GOOGLE_ADS_ID && GOOGLE_ADS_CONVERSION_LABEL) {
       const conversionTag = `${GOOGLE_ADS_ID}/${GOOGLE_ADS_CONVERSION_LABEL}`;
       
-      console.log('🎯 Disparando conversão Google Ads');
+      console.log('🎯 Disparando conversão Google Ads (página sucesso)');
       console.log('🎯 Conversion Tag:', conversionTag);
       console.log('🎯 Transaction ID:', transactionId);
       console.log('🎯 Valor:', valor);
@@ -41,26 +41,7 @@ function SucessoContent() {
         'transaction_id': transactionId
       });
       
-      console.log('✅ Conversão Google Ads disparada!');
-    }
-
-    // Google Analytics 4 - Purchase Event
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'purchase', {
-        transaction_id: transactionId,
-        value: valor ? parseFloat(valor) : 0,
-        currency: 'BRL',
-        items: []
-      });
-    }
-
-    // Meta Pixel - Purchase Event
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'Purchase', {
-        value: valor ? parseFloat(valor) : 0,
-        currency: 'BRL',
-        transaction_id: transactionId
-      });
+      console.log('✅ Conversão Google Ads disparada (página sucesso)!');
     }
   }, [transactionId, valor, router, GOOGLE_ADS_ID, GOOGLE_ADS_CONVERSION_LABEL]);
 

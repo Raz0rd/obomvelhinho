@@ -70,31 +70,9 @@ export async function POST(request: NextRequest) {
             console.error('❌ [ATUALIZAR-STATUS] Erro:', emailResult.error);
           }
 
-          // Enviar evento PAID para Utmify
-          console.log('🔔 [ATUALIZAR-STATUS] Enviando evento PAID para Utmify...');
-          try {
-            const utmifyResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/utmify/evento`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                evento: 'paid',
-                transactionId: pedido.transaction_id,
-                email: pedido.email,
-                valor: pedido.total,
-                items: items
-              })
-            });
-            
-            if (utmifyResponse.ok) {
-              console.log('✅ [ATUALIZAR-STATUS] Evento PAID enviado para Utmify');
-            } else {
-              console.error('❌ [ATUALIZAR-STATUS] Falha ao enviar evento PAID para Utmify');
-            }
-          } catch (utmifyError) {
-            console.error('⚠️ [ATUALIZAR-STATUS] Erro ao enviar evento Utmify:', utmifyError);
-          }
+          // NOTA: Evento PAID para Utmify é enviado diretamente no PixPayment.tsx
+          // quando o pagamento é confirmado, para evitar duplicação
+          console.log('ℹ️ [ATUALIZAR-STATUS] Evento Utmify PAID já foi enviado pelo PixPayment');
         } else {
           console.error('❌ [ATUALIZAR-STATUS] Pedido não encontrado no banco!');
         }

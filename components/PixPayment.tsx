@@ -10,9 +10,29 @@ interface PixPaymentProps {
   amount: number;
   onSuccess: () => void;
   onClose: () => void;
+  customerEmail?: string;
+  customerData?: {
+    nome: string;
+    telefone: string;
+    cpf: string;
+  };
+  items?: Array<{
+    titulo: string;
+    quantidade: number;
+    preco: number;
+  }>;
 }
 
-export default function PixPayment({ transactionId, qrCode, amount, onSuccess, onClose }: PixPaymentProps) {
+export default function PixPayment({ 
+  transactionId, 
+  qrCode, 
+  amount, 
+  onSuccess, 
+  onClose,
+  customerEmail,
+  customerData,
+  items 
+}: PixPaymentProps) {
   const [qrCodeImage, setQrCodeImage] = useState('');
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<'waiting' | 'paid' | 'error'>('waiting');
@@ -30,17 +50,23 @@ export default function PixPayment({ transactionId, qrCode, amount, onSuccess, o
   useEffect(() => {
     const checkPayment = async () => {
       try {
+        console.log('🔍 [PIX-PAYMENT] Verificando status do pagamento na Umbrela...');
         const response = await fetch(`/api/payment/status/${transactionId}`);
         const data = await response.json();
 
         if (data.success && data.isPaid) {
+          console.log('✅ [PIX-PAYMENT] Pagamento CONFIRMADO pela Umbrela!');
+          console.log('✅ [PIX-PAYMENT] Transaction ID:', transactionId);
+          console.log('✅ [PIX-PAYMENT] Valor:', amount / 100);
+          
           setStatus('paid');
           if (pollingRef.current) {
             clearInterval(pollingRef.current);
           }
           
-          // Atualizar status no banco de dados
+          // 1. Atualizar status no banco de dados
           try {
+            console.log('💾 [PIX-PAYMENT] Atualizando status no banco...');
             await fetch('/api/pedidos/atualizar-status', {
               method: 'POST',
               headers: {
@@ -51,16 +77,69 @@ export default function PixPayment({ transactionId, qrCode, amount, onSuccess, o
                 status: 'PAID'
               })
             });
+            console.log('✅ [PIX-PAYMENT] Status atualizado no banco');
           } catch (err) {
-            console.error('Erro ao atualizar status no banco:', err);
+            console.error('❌ [PIX-PAYMENT] Erro ao atualizar status no banco:', err);
+          }
+
+          // 2. Disparar conversão Google Ads
+          const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || '';
+          const GOOGLE_ADS_CONVERSION_LABEL = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || '';
+          
+          if (typeof window !== 'undefined' && (window as any).gtag && GOOGLE_ADS_ID && GOOGLE_ADS_CONVERSION_LABEL) {
+            const conversionTag = `${GOOGLE_ADS_ID}/${GOOGLE_ADS_CONVERSION_LABEL}`;
+            const valorReal = amount / 100;
+            
+            console.log('🎯 [PIX-PAYMENT] Disparando conversão Google Ads');
+            console.log('🎯 [PIX-PAYMENT] Tag:', conversionTag);
+            console.log('🎯 [PIX-PAYMENT] Valor:', valorReal);
+            
+            (window as any).gtag('event', 'conversion', {
+              'send_to': conversionTag,
+              'value': valorReal,
+              'currency': 'BRL',
+              'transaction_id': transactionId
+            });
+            
+            console.log('✅ [PIX-PAYMENT] Conversão Google Ads disparada!');
+          } else {
+            console.warn('⚠️ [PIX-PAYMENT] Google Ads não configurado ou gtag não disponível');
+          }
+
+          // 3. Enviar evento PAID para Utmify
+          if (customerEmail && items) {
+            try {
+              console.log('🔔 [PIX-PAYMENT] Enviando evento PAID para Utmify...');
+              await fetch('/api/utmify/evento', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  evento: 'paid',
+                  transactionId: transactionId,
+                  email: customerEmail,
+                  nome: customerData?.nome || '',
+                  telefone: customerData?.telefone || '',
+                  cpf: customerData?.cpf || '',
+                  valor: amount / 100,
+                  items: items
+                })
+              });
+              console.log('✅ [PIX-PAYMENT] Evento PAID enviado para Utmify');
+            } catch (utmifyError) {
+              console.error('⚠️ [PIX-PAYMENT] Erro ao enviar evento Utmify:', utmifyError);
+            }
           }
           
+          // Aguardar 2 segundos para garantir que conversões foram registradas
           setTimeout(() => {
+            console.log('🎉 [PIX-PAYMENT] Redirecionando para página de sucesso...');
             onSuccess();
           }, 2000);
         }
       } catch (error) {
-        console.error('Erro ao verificar pagamento:', error);
+        console.error('❌ [PIX-PAYMENT] Erro ao verificar pagamento:', error);
       }
     };
 

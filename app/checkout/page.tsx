@@ -777,6 +777,17 @@ export default function CheckoutPage() {
           amount={pixData.amount}
           onSuccess={handlePixSuccess}
           onClose={handlePixClose}
+          customerEmail={formData.email}
+          customerData={{
+            nome: formData.nome,
+            telefone: removeFormatting(formData.telefone),
+            cpf: removeFormatting(formData.cpf)
+          }}
+          items={items.map(item => ({
+            titulo: item.product.title + (item.selectedVariant ? ` - ${item.selectedVariant.name}` : ''),
+            quantidade: item.quantity,
+            preco: item.selectedVariant?.price || item.product.priceWithDiscount || item.product.price
+          }))}
         />
       )}
     </>
