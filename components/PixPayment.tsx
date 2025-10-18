@@ -43,21 +43,17 @@ export default function PixPayment({
   useEffect(() => {
     QRCode.toDataURL(qrCode, { width: 300, margin: 1 })
       .then(setQrCodeImage)
-      .catch(console.error);
+      .catch(() => {});
   }, [qrCode]);
 
   // Polling para verificar pagamento
   useEffect(() => {
     const checkPayment = async () => {
       try {
-        console.log('🔍 [PIX-PAYMENT] Verificando status do pagamento na Umbrela...');
         const response = await fetch(`/api/payment/status/${transactionId}`);
         const data = await response.json();
 
         if (data.success && data.isPaid) {
-          console.log('✅ [PIX-PAYMENT] Pagamento CONFIRMADO pela Umbrela!');
-          console.log('✅ [PIX-PAYMENT] Transaction ID:', transactionId);
-          console.log('✅ [PIX-PAYMENT] Valor:', amount / 100);
           
           setStatus('paid');
           if (pollingRef.current) {
@@ -66,7 +62,6 @@ export default function PixPayment({
           
           // 1. Atualizar status no banco de dados
           try {
-            console.log('💾 [PIX-PAYMENT] Atualizando status no banco...');
             await fetch('/api/pedidos/atualizar-status', {
               method: 'POST',
               headers: {
@@ -77,9 +72,8 @@ export default function PixPayment({
                 status: 'PAID'
               })
             });
-            console.log('✅ [PIX-PAYMENT] Status atualizado no banco');
           } catch (err) {
-            console.error('❌ [PIX-PAYMENT] Erro ao atualizar status no banco:', err);
+            // Erro ao atualizar status
           }
 
           // 2. Disparar conversão Google Ads
@@ -90,26 +84,17 @@ export default function PixPayment({
             const conversionTag = `${GOOGLE_ADS_ID}/${GOOGLE_ADS_CONVERSION_LABEL}`;
             const valorReal = amount / 100;
             
-            console.log('🎯 [PIX-PAYMENT] Disparando conversão Google Ads');
-            console.log('🎯 [PIX-PAYMENT] Tag:', conversionTag);
-            console.log('🎯 [PIX-PAYMENT] Valor:', valorReal);
-            
             (window as any).gtag('event', 'conversion', {
               'send_to': conversionTag,
               'value': valorReal,
               'currency': 'BRL',
               'transaction_id': transactionId
             });
-            
-            console.log('✅ [PIX-PAYMENT] Conversão Google Ads disparada!');
-          } else {
-            console.warn('⚠️ [PIX-PAYMENT] Google Ads não configurado ou gtag não disponível');
           }
 
           // 3. Enviar evento PAID para Utmify
           if (customerEmail && items) {
             try {
-              console.log('🔔 [PIX-PAYMENT] Enviando evento PAID para Utmify...');
               await fetch('/api/utmify/evento', {
                 method: 'POST',
                 headers: {
@@ -126,20 +111,13 @@ export default function PixPayment({
                   items: items
                 })
               });
-              console.log('✅ [PIX-PAYMENT] Evento PAID enviado para Utmify');
             } catch (utmifyError) {
-              console.error('⚠️ [PIX-PAYMENT] Erro ao enviar evento Utmify:', utmifyError);
+              // Erro ao enviar evento Utmify
             }
           }
-          
-          // Aguardar 2 segundos para garantir que conversões foram registradas
-          setTimeout(() => {
-            console.log('🎉 [PIX-PAYMENT] Redirecionando para página de sucesso...');
-            onSuccess();
-          }, 2000);
         }
       } catch (error) {
-        console.error('❌ [PIX-PAYMENT] Erro ao verificar pagamento:', error);
+        // Erro ao verificar pagamento
       }
     };
 
@@ -187,12 +165,61 @@ export default function PixPayment({
 
   if (status === 'paid') {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
-          <CheckCircle className="mx-auto text-green-600 mb-4" size={80} />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Pagamento Confirmado!</h2>
-          <p className="text-gray-600 mb-4">Seu pedido foi recebido e está sendo processado.</p>
-          <div className="animate-pulse text-sm text-gray-500">Redirecionando...</div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-white rounded-xl p-8 max-w-2xl w-full my-8">
+          <div className="text-center mb-6">
+            <CheckCircle className="mx-auto text-green-600 mb-4 animate-bounce" size={80} />
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">🎉 Pagamento Confirmado!</h2>
+            <p className="text-lg text-gray-600">Seu pedido foi recebido com sucesso!</p>
+          </div>
+
+          {/* Informações do Pedido */}
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-green-800 font-medium text-center">
+              Número do Pedido: <span className="font-mono text-base">{transactionId}</span>
+            </p>
+            {customerEmail && (
+              <p className="text-sm text-green-700 mt-2 text-center">
+                📧 Enviamos um email de confirmação para: <strong>{customerEmail}</strong>
+              </p>
+            )}
+          </div>
+
+          {/* Próximos Passos */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 className="font-bold text-blue-900 mb-4 text-lg">📦 Próximos Passos:</h3>
+            <div className="space-y-3 text-sm text-blue-800">
+              <div className="flex items-start gap-3">
+                <span className="font-bold text-lg">1.</span>
+                <div>
+                  <p className="font-semibold">Preparação do Pedido</p>
+                  <p className="text-blue-700">Vamos separar e embalar seus produtos com todo cuidado.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="font-bold text-lg">2.</span>
+                <div>
+                  <p className="font-semibold">Envio para Transportadora</p>
+                  <p className="text-blue-700">Assim que enviarmos, você receberá um <strong>email com o código de rastreio</strong> para acompanhar a entrega.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="font-bold text-lg">3.</span>
+                <div>
+                  <p className="font-semibold">Acompanhe sua Entrega</p>
+                  <p className="text-blue-700">Use o código de rastreio para ver onde seu pedido está em tempo real.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Botão para Continuar */}
+          <button
+            onClick={onSuccess}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg"
+          >
+            Continuar Navegando
+          </button>
         </div>
       </div>
     );

@@ -256,9 +256,7 @@ export default function CheckoutPage() {
               }
             })
           });
-          console.log('📧 Email de QR Code gerado enviado');
         } catch (emailError) {
-          console.error('⚠️ Erro ao enviar email de QR Code:', emailError);
           // Não bloqueia o fluxo se email falhar
         }
 
@@ -284,9 +282,7 @@ export default function CheckoutPage() {
               }))
             })
           });
-          console.log('🔔 Evento PENDING enviado para Utmify');
         } catch (utmifyError) {
-          console.error('⚠️ Erro ao enviar evento Utmify:', utmifyError);
           // Não bloqueia o fluxo se Utmify falhar
         }
 
@@ -300,7 +296,6 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Erro ao criar pagamento');
       }
     } catch (error) {
-      console.error('Erro ao processar pedido:', error);
       alert('Erro ao processar pedido. Tente novamente.');
       setIsProcessing(false);
     } finally {
@@ -311,14 +306,8 @@ export default function CheckoutPage() {
   const handlePixSuccess = () => {
     clearCart();
     
-    // Redirecionar para página de sucesso com dados do pedido
-    const params = new URLSearchParams({
-      transactionId: pixData?.transactionId || '',
-      valor: (pixData?.amount ? (pixData.amount / 100).toFixed(2) : '0'),
-      email: formData.email
-    });
-    
-    router.push(`/sucesso?${params.toString()}`);
+    // Redirecionar para a home (modal já mostrou todas as informações)
+    router.push('/');
   };
 
   const handlePixClose = () => {
@@ -350,7 +339,6 @@ export default function CheckoutPage() {
 
       setCepLoaded(true);
     } catch (error) {
-      console.error('Erro ao buscar CEP:', error);
       alert('CEP não encontrado. Verifique e tente novamente.');
       setCepLoaded(false);
     } finally {

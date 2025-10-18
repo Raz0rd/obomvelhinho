@@ -29,19 +29,12 @@ function SucessoContent() {
     if (typeof window !== 'undefined' && (window as any).gtag && GOOGLE_ADS_ID && GOOGLE_ADS_CONVERSION_LABEL) {
       const conversionTag = `${GOOGLE_ADS_ID}/${GOOGLE_ADS_CONVERSION_LABEL}`;
       
-      console.log('🎯 Disparando conversão Google Ads (página sucesso)');
-      console.log('🎯 Conversion Tag:', conversionTag);
-      console.log('🎯 Transaction ID:', transactionId);
-      console.log('🎯 Valor:', valor);
-      
       (window as any).gtag('event', 'conversion', {
         'send_to': conversionTag,
         'value': valor ? parseFloat(valor) : 0,
         'currency': 'BRL',
         'transaction_id': transactionId
       });
-      
-      console.log('✅ Conversão Google Ads disparada (página sucesso)!');
     }
   }, [transactionId, valor, router, GOOGLE_ADS_ID, GOOGLE_ADS_CONVERSION_LABEL]);
 

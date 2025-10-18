@@ -55,7 +55,6 @@ export default function AdminPedidos() {
         carregarPedidos();
       }
     } catch (error) {
-      console.error('Erro ao verificar acesso:', error);
       setAccessDenied(true);
       setLoading(false);
     }
@@ -70,7 +69,6 @@ export default function AdminPedidos() {
         setPedidos(data.pedidos);
       }
     } catch (error) {
-      console.error('Erro ao carregar pedidos:', error);
       alert('Erro ao carregar pedidos');
     } finally {
       setLoading(false);
@@ -120,7 +118,6 @@ export default function AdminPedidos() {
         alert('Erro: ' + data.error);
       }
     } catch (error) {
-      console.error('Erro:', error);
       alert('Erro ao marcar como enviado');
     }
   };
